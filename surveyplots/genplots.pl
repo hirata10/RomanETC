@@ -36,6 +36,34 @@ for $lat (0,15,30,45,60,75) {
   close G;
 }
 
+# Generate WL yields versus exposure time
+for $lat (0,15,30,45,60,75) {
+  open(G, q-|tee x.dat|gnuplot-) or die;
+  print G qq|set term postscript enhanced 18 eps color\n|;
+  print G qq|set output "plots/galrate-$N-$lat.eps"\n|;
+  print G qq|set xlabel "exposure time [s]"\n|;
+  print G qq|set ylabel "effective shapes [10^6 galaxies/day]"\n|;
+  print G qq|set xrange [0:300]; set yrange [0:9.2]\n|;
+  print G qq|set grid; set key at 295,9.05\n|;
+  print G qq+set title "$N exposures, |{/Symbol b}|=$lat deg"\n+;
+  for $ib (0..7) {
+    $ibp = $ib+1;
+    $lw = 1.5;
+    if ($ib==7) {$lw=2.5;}
+    print G qq|set style line $ibp lt 1 lw $lw dt $ibp lc rgb "#$RGB[$ib]"\n|;
+  }
+  @ord = (7,2,3,4,1,5,6,0);
+  print G 'plot ';
+  for $i (0..7) {
+    $ib = $ord[$i];
+    $ii = $ib+1;
+    $c = int(substr $bands[$ib], 1, 3);
+    print G qq|"$file" using (\$1==$lat?\$2:1/0):(\$10==$c?\$4/\$8*3.6:1/0) with lines title "$bands[$ib]" ls $ii|;
+    if ($i<7) {print G q:, :;}
+  }
+  close G;
+}
+
 # Generate depths versus time
 for $lat (0,15,30,45,60,75) {
   open(G, q-|tee x.dat|gnuplot-) or die;
